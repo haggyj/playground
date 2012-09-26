@@ -1,4 +1,4 @@
-d3-playground
+playground
 =============
 
-Experiments and Tutorials using D3
+Experiments and Tutorials using some well known Javascript frameworks
