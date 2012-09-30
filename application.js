@@ -13,35 +13,57 @@ define(
         
         var map = new google.maps.Map($("#map").get(0), options)
         
-        var mark = function(address) {
-            $.getJSON("https://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=" + address)
+        var initialise = function() {
+            $.getJSON("http://127.0.0.1:50000/visits")
                 .success(
-                    function(result) {
-                        var location = result.results[0].geometry.location
-                        
-                        var position = new google.maps.LatLng(location.lat, location.lng)
-                        
-                        var config = {
-                            position: position,
-                            animation: google.maps.Animation.DROP,
-                            title: "Home" 
-                        }
-                        
-                        var marker = new google.maps.Marker(config)
-                        
-                        marker.setMap(map)
+                    function(visits) {
+                        visits.forEach(
+                            function(element) {
+                                mark(element.latitude, element.longitude)
+                            }
+                        )
                     }
                 )
-                .error(
-                    function() {
-                        console.log("Failed, god knows why, to get a geocode!")
-                    }    
-                )
+        }()
+
+        var mark = function(latitude, longitude) {
+            var position = new google.maps.LatLng(latitude, longitude)
+            
+            var config = {
+                position: position,
+                animation: google.maps.Animation.DROP,
+                title: "Home" 
+            }
+            
+            var marker = new google.maps.Marker(config)
+            
+            marker.setMap(map)
         }
         
         $("#add").click(
             function() {
-                mark($("#address").val())    
+                var address = $("#address").val()
+                var vet = $("#vet").val()
+
+                $.post(
+                    "http://localhost:50000/visit",
+                    {
+                        address: address,
+                        vet: vet
+                    }
+                )
+                .success(
+                    function(coordinates) {
+                        coordinates = JSON.parse(coordinates)
+
+                        mark(coordinates.latitude, coordinates.longitude)
+                    }
+                )
+                .error(
+                    function() {
+                        console.log("sorry, but couldn't find an address")
+                    }
+                )  
             }
         )
     }
